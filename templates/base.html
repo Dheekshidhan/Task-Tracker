@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block page_title %}Task Tracker{% endblock %}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-page: #0f1115;
+      --bg-panel: #1c1f26;
+      --bg-input: #252a33;
+      --border: #333a45;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 2rem 1.5rem;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* -----------------------------------------
+       NEW: Massive, Spaced Top Navigation
+       ----------------------------------------- */
+    .top-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3.5rem; /* Huge gap before the main panels */
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border);
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav-tabs a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .nav-tabs a:hover {
+      color: #ffffff;
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .top-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 1rem;
+      border: 1px solid;
+    }
+
+    .date-badge {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+    }
+
+    .date-badge span { color: #ffffff; }
+
+    .streak-badge {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .streak-badge span { color: #ffffff; }
+
+
+    /* -----------------------------------------
+       Core App Styles (From previous step)
+       ----------------------------------------- */
+    .panel {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 2rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border);
+      color: #ffffff;
+    }
+
+    .bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .bubble-accent { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+    .bubble-success { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+    .bubble-danger { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    input, select {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 12px;
+      padding: 0.875rem 1.25rem;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus { border-color: var(--primary); }
+
+    .btn {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.875rem 1.75rem;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn:hover { background-color: var(--primary-hover); }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 1rem;
+    }
+
+    th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 0 1.5rem;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    td {
+      padding: 1.25rem 1.5rem;
+      background-color: var(--bg-input);
+    }
+
+    td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+    td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+
+    .actions { display: flex; gap: 0.75rem; }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+
+    /* Flash Messages */
+    .flash-messages { margin-bottom: 2rem; }
+    .flash-message {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .flash-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .flash-info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .flash-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    @media (max-width: 768px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .form-row { flex-direction: column; align-items: stretch; }
+      .top-navbar { flex-direction: column; align-items: stretch; gap: 1.5rem; }
+      .nav-tabs { flex-wrap: wrap; }
+      .header-stats { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FULLY REDESIGNED NAVIGATION HEADER -->
+  <header class="top-navbar">
+    <nav class="nav-tabs">
+      <a href="{{ url_for('index') }}">Log</a>
+      <a href="{{ url_for('stats') }}">Stats</a>
+      <a href="{{ url_for('compare') }}">Compare</a>
+    </nav>
+
+    <div class="header-stats">
+      <div class="top-badge date-badge">
+        📅 Date <span>{{ today.strftime('%Y-%m-%d') if today else '' }}</span>
+      </div>
+      <div class="top-badge streak-badge">
+        🔥 Streak <span>{{ streak }}</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Handle flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

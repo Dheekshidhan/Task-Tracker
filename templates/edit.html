@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block page_title %}Edit Entry{% endblock %}
+
+{% block content %}
+
+<section class="panel">
+  <h2>Edit Task</h2>
+  <form class="add-form" action="{{ url_for('edit_task', task_id=task.id) }}" method="post">
+    <div>
+      <label for="title">Task</label>
+      <input type="text" id="title" name="title" value="{{ task.title }}" required>
+    </div>
+    <div>
+      <label for="points">Points</label>
+      <input type="number" id="points" name="points" min="1" max="10" value="{{ task.points }}" required>
+    </div>
+    <div>
+      <label for="due_date">Target Date</label>
+      <input type="date" id="due_date" name="due_date" value="{{ task.due_date.isoformat() }}" required>
+    </div>
+    <button type="submit" class="btn">Save Changes</button>
+  </form>
+  <p style="margin-top:14px;">
+    <a href="{{ url_for('index') }}" class="icon-btn">Cancel</a>
+  </p>
+</section>
+
+{% endblock %}

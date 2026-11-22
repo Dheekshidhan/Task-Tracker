@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="panel">
+  <h2>Month-over-Month Comparison</h2>
+
+  <form method="GET" action="{{ url_for('compare') }}" class="form-row" style="margin-bottom: 3rem; background: var(--bg-page); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border);">
+    <div class="form-group">
+      <label for="a">Select First Month</label>
+      <select id="a" name="a">
+        {% for opt in month_options %}
+        <option value="{{ opt.value }}" {% if opt.value == selected_a %}selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-weight: bold;">
+      <span style="margin-top: 2rem;">VS</span>
+    </div>
+
+    <div class="form-group">
+      <label for="b">Select Second Month</label>
+      <select id="b" name="b">
+        {% for opt in month_options %}
+        <option value="{{ opt.value }}" {% if opt.value == selected_b %}selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn" style="margin-top: 0.5rem;">Compare Now</button>
+  </form>
+
+  <div class="compare-grid">
+    <!-- Month A Data -->
+    <div class="panel" style="background-color: var(--bg-page); border: 1px solid var(--border); box-shadow: none; margin: 0; padding: 2.5rem; text-align: center;">
+      <div class="bubble bubble-accent" style="margin-bottom: 1.5rem;">{{ stats_a.label }}</div>
+
+      <div style="margin-bottom: 2.5rem;">
+        <div style="font-size: 4rem; font-weight: 800; line-height: 1; color: #fff;">{{ stats_a.points }}</div>
+        <div style="color: var(--text-muted); font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">TOTAL POINTS</div>
+      </div>
+
+      <div>
+        <div style="font-size: 2.5rem; font-weight: 700; color: var(--text-main);">{{ stats_a.count }}</div>
+        <div style="color: var(--text-muted); font-weight: 600;">Tasks Completed</div>
+      </div>
+    </div>
+
+    <!-- Month B Data -->
+    <div class="panel" style="background-color: var(--bg-page); border: 1px solid var(--border); box-shadow: none; margin: 0; padding: 2.5rem; text-align: center;">
+      <div class="bubble bubble-accent" style="margin-bottom: 1.5rem;">{{ stats_b.label }}</div>
+
+      <div style="margin-bottom: 2.5rem;">
+        <div style="font-size: 4rem; font-weight: 800; line-height: 1; color: #fff;">{{ stats_b.points }}</div>
+        <div style="color: var(--text-muted); font-weight: 600; margin-top: 0.5rem; letter-spacing: 1px;">TOTAL POINTS</div>
+      </div>
+
+      <div>
+        <div style="font-size: 2.5rem; font-weight: 700; color: var(--text-main);">{{ stats_b.count }}</div>
+        <div style="color: var(--text-muted); font-weight: 600;">Tasks Completed</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

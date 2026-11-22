@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  /* -----------------------------------------
+     Stats Page Specific UI
+     ----------------------------------------- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Score Gauge Alignment */
+  .score-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .gauge-container {
+    width: 220px;
+    margin: 1rem auto 0;
+  }
+
+  .gauge-svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* The background arc */
+  .gauge-bg {
+    fill: none;
+    stroke: var(--bg-input);
+    stroke-width: 12;
+    stroke-linecap: round;
+  }
+
+  /* The colored score fill */
+  .gauge-fill {
+    fill: none;
+    stroke: var(--warning);
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.5s ease-out;
+  }
+
+  .score-value {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: -1.5rem;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+  }
+
+  /* Spaced Metrics List */
+  .metric-list {
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 1rem;
+  }
+
+  .metric-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .metric-label {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .metric-value {
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  /* CSS Bar Charts */
+  .chart-area {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 250px;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+    gap: 0.5rem;
+  }
+
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    flex: 1;
+    gap: 0.75rem;
+  }
+
+  .bar {
+    width: 100%;
+    max-width: 40px;
+    background: linear-gradient(180deg, var(--primary) 0%, rgba(59, 130, 246, 0.2) 100%);
+    border-radius: 8px 8px 0 0;
+    min-height: 4px;
+    transition: height 0.5s ease;
+  }
+
+  .bar-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .bar-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* Difficulty Grid */
+  .diff-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .diff-card {
+    background: var(--bg-input);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+</style>
+
+<div class="stats-grid">
+
+  <!-- LEFT COLUMN: Composite Score -->
+  <div class="panel score-card" style="margin-bottom: 0;">
+    <h2 style="align-self: flex-start; width: 100%;">Composite Score</h2>
+
+    <!-- SVG Gauge Graphic -->
+    <div class="gauge-container">
+      <svg viewBox="0 0 100 50" class="gauge-svg">
+        <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50"></path>
+        <path class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" pathLength="100" stroke-dasharray="100" stroke-dashoffset="{{ 100 - overall.score }}"></path>
+      </svg>
+    </div>
+
+    <div class="score-value">{{ overall.score }}</div>
+    <div class="bubble bubble-accent" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">{{ overall.label }}</div>
+
+    <!-- Properly Spaced Metrics List -->
+    <div class="metric-list">
+      <div class="metric-row">
+        <span class="metric-label">Completion Rate</span>
+        <span class="metric-value">{{ overall.cr }}%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">On-Time Rate</span>
+        <span class="metric-value">{{ overall.otr }}%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Tasks Due / Completed</span>
+        <span class="metric-value">{{ overall.total_due }} / {{ overall.total_completed }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Avg. Time to Complete</span>
+        <span class="metric-value">
+          {% if avg_completion_days != None %}{{ avg_completion_days }} days{% else %}--{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Weekly Trend Chart -->
+  <div class="panel" style="margin-bottom: 0;">
+    <h2>Weekly Trend</h2>
+
+    <div class="chart-area">
+      {% for w in trend %}
+      <div class="bar-col">
+        <span class="bar-value">{{ w.score|int }}</span>
+        <!-- Height is driven directly by the score percentage -->
+        <div class="bar" style="height: {{ w.score }}%;"></div>
+        <span class="bar-label">{{ w.label }}</span>
+      </div>
+      {% else %}
+      <p style="color: var(--text-muted); width: 100%; text-align: center;">Not enough data yet.</p>
+      {% endfor %}
+    </div>
+
+    {% if best_week %}
+    <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 1.5rem; border-radius: 12px;">
+      <div>
+        <div style="font-weight: 700; color: #fff; font-size: 1.1rem;">Personal Best Week</div>
+        <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">{{ best_week.label }}</div>
+      </div>
+      <div class="bubble bubble-warning" style="font-size: 1.2rem;">🏆 {{ best_week.points }} Pts</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Difficulty Breakdown -->
+<div class="panel">
+  <h2>Difficulty Breakdown</h2>
+  <div class="diff-grid">
+    <div class="diff-card">
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--success); line-height: 1;">{{ difficulty['Easy'] }}</div>
+      <div style="margin-top: 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.85rem;">Easy Tasks</div>
+      <div style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;">1-3 Pts</div>
+    </div>
+
+    <div class="diff-card">
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--warning); line-height: 1;">{{ difficulty['Medium'] }}</div>
+      <div style="margin-top: 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.85rem;">Medium Tasks</div>
+      <div style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;">4-7 Pts</div>
+    </div>
+
+    <div class="diff-card">
+      <div style="font-size: 2.5rem; font-weight: 800; color: var(--danger); line-height: 1;">{{ difficulty['Hard'] }}</div>
+      <div style="margin-top: 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.85rem;">Hard Tasks</div>
+      <div style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;">8-10 Pts</div>
+    </div>
+  </div>
+</div>
+
+<!-- Monthly Totals Chart -->
+<div class="panel">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 0.75rem;">
+    <h2 style="border: none; margin: 0; padding: 0;">Monthly Point Totals</h2>
+
+    <form method="GET" action="{{ url_for('stats') }}">
+      <select name="year" onchange="this.form.submit()" style="padding: 0.5rem 1rem;">
+        {% for y in years %}
+        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <div class="chart-area" style="height: 300px;">
+    {% set max_pts = monthly | map(attribute='points') | max %}
+    {% set max_pts = max_pts if max_pts > 0 else 1 %}
+
+    {% for m in monthly %}
+    <div class="bar-col">
+      <span class="bar-value">{{ m.points }}</span>
+      <!-- Calculate height relative to the highest scoring month so the chart scales properly -->
+      <div class="bar" style="height: {{ (m.points / max_pts) * 100 }}%;"></div>
+      <span class="bar-label">{{ m.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
